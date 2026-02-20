@@ -1,0 +1,21 @@
+[
+  {
+    "pose": "standing front-facing",
+    "background": "white studio",
+    "options": {
+      "ar": "3:4",
+      "size": "1K",
+      "format": "jpg"
+    }
+  },
+  {
+    "pose": "walking side angle",
+    "background": "urban street",
+    "num_variations": 2,
+    "options": {
+      "ar": "9:16",
+      "size": "4K",
+      "format": "jpg"
+    }
+  }
+]
