@@ -4,29 +4,47 @@
   <h3 align="center"><a href="https://on-model.com">Flat-to-Model by PiktID</a></h3>
 </p>
 
+<p align="center">
+  <b>Transform flat-lay product photos into realistic on-model imagery with AI.</b>
+  <br/>
+
+</p>
+
 # Flat-to-Model - v1.0
 [![Official Website](https://img.shields.io/badge/Official%20Website-on--model.com-blue?style=flat&logo=world&logoColor=white)](https://on-model.com)
-[![On-Model App](https://img.shields.io/badge/On--Model%20App-beta.on--model.com-green?style=flat&logo=world&logoColor=white)](https://beta.on-model.com)
+[![On-Model App](https://img.shields.io/badge/On--Model%20App-app.on--model.com-green?style=flat&logo=world&logoColor=white)](https://app.on-model.com)
 [![Discord Follow](https://dcbadge.vercel.app/api/server/FJU39e9Z4P?style=flat)](https://discord.com/invite/FJU39e9Z4P)
 
 Flat-to-Model implementation by PiktID for generating on-model Product Detail Page (PDP) images from flat-lay/SKU product photography. This script takes article images and generates realistic on-model photos using the <a href="https://v2.api.piktid.com">PiktID v2 API</a>.
+
+## Why On-Model?
+
+- **Flat-lay to on-model in minutes** — Upload a flat-lay, mannequin, or hanger shot and get realistic on-model images with full control over pose, background, and style.
+- **Garment preservation** — Pixel-perfect accuracy on textures, patterns, stitching, and fit.
+- **50+ diverse AI identities** — Models spanning ages, genders, ethnicities, and body types (XS–XL). Or upload your own brand model.
+- **Custom presets** — Built-in presets for PDP, editorial, lifestyle, and social media. Or create your own.
+- **Batch processing** — Process entire product catalogs with parallel workers. Scale from 10 SKUs to 10,000.
+- **Full API access** — Automate image generation in your existing workflow, PIM system, or custom pipeline.
+- **4K output** — Production-ready resolution for web, print, and advertising.
+
+Built by PiktID — the team behind [Studio](https://studio.piktid.com) and EraseID, used by 300,000+ people for AI-powered image processing.
 
 ## About On-Model
 
 [On-Model](https://on-model.com) is an AI-powered platform by PiktID designed for fashion e-commerce. It enables brands, retailers, and marketplaces to transform their product imagery at scale:
 
-- **Model Swap** — Replace models in existing product photos while preserving garments exactly as they are
 - **Flat-to-Model** — Convert flat-lay product photography into realistic on-model images
+- **Model Swap** — Replace models in existing product photos while preserving garments exactly as they are
 - **Identity Management** — Create and maintain consistent AI model identities across your entire catalog
 
-Try the platform at [beta.on-model.com](https://beta.on-model.com) or learn more at [on-model.com](https://on-model.com).
+Try the platform at [app.on-model.com](https://app.on-model.com) — **15 free images per month**, no credit card required.
 
 ## Getting Started
 
 The following instructions suppose you have already installed a recent version of Python. For a general overview, please visit the <a href="https://docs.piktid.com/docs/v2">API documentation</a>.
 To use any PiktID API, authentication credentials are required.
 
-> **Step 0** - Register at <a href="https://beta.on-model.com">beta.on-model.com</a>. 10 credits are given for free to all new users.
+> **Step 0** - Register at <a href="https://app.on-model.com">app.on-model.com</a>. 15 images are given for free to all new users every month.
 
 > **Step 1** - Clone the Flat-to-Model repository
 ```bash
@@ -358,7 +376,7 @@ No images found in SKU/ARTICLE123
 Error checking identity: ...
 ```
 **Solution:**
-- Verify the identity code exists in your gallery at [beta.on-model.com](https://beta.on-model.com)
+- Verify the identity code exists in your gallery at [app.on-model.com](https://app.on-model.com)
 - Or provide an `--identity-image` path to upload a new identity
 
 ### Invalid Instructions File
@@ -407,7 +425,8 @@ Check the console output for detailed error messages.
 ## Links
 
 - [On-Model Website](https://on-model.com) — Learn about the platform
-- [On-Model App](https://beta.on-model.com) — Try the app (beta)
+- [On-Model App](https://app.on-model.com) — Try the app (15 free images/month)
+- [Model Swap Repo](https://github.com/piktid/model-swap) — Sister repo for model swap
 - [API Documentation](https://docs.piktid.com/docs/v2) — Full API reference
 - [PiktID](https://piktid.com) — Company website
 - [Discord](https://discord.com/invite/FJU39e9Z4P) — Community and support
