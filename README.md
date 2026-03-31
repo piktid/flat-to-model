@@ -10,6 +10,10 @@
 
 </p>
 
+<p align="center">
+  <img src="banner.webp" alt="Flat-to-Model: flat-lay product images transformed into on-model photography" width="100%">
+</p>
+
 # Flat-to-Model - v1.0
 [![Official Website](https://img.shields.io/badge/Official%20Website-on--model.com-blue?style=flat&logo=world&logoColor=white)](https://on-model.com)
 [![On-Model App](https://img.shields.io/badge/On--Model%20App-app.on--model.com-green?style=flat&logo=world&logoColor=white)](https://app.on-model.com)
@@ -42,9 +46,8 @@ Try the platform at [app.on-model.com](https://app.on-model.com) — **15 free i
 ## Getting Started
 
 The following instructions suppose you have already installed a recent version of Python. For a general overview, please visit the <a href="https://docs.piktid.com/docs/v2">API documentation</a>.
-To use any PiktID API, authentication credentials are required.
 
-> **Step 0** - Register at <a href="https://app.on-model.com">app.on-model.com</a>. 15 images are given for free to all new users every month.
+> **Step 0** - Register at <a href="https://app.on-model.com">app.on-model.com</a>. 15 images are given for free to all new users every month. Then generate an API token from your [profile dashboard](https://app.on-model.com/profile?tab=tokens).
 
 > **Step 1** - Clone the Flat-to-Model repository
 ```bash
@@ -66,8 +69,7 @@ You can either use an existing identity code from your gallery or upload a new i
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/ARTICLE123 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --output-folder results/ARTICLE123
 ```
@@ -76,8 +78,7 @@ $ python flat_to_model.py \
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/ARTICLE123 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-image identities/female/LisaSummer.jpg \
   --output-folder results/ARTICLE123
 ```
@@ -117,16 +118,17 @@ The `metadata.json` file contains:
 
 The script follows this sequence of API calls:
 
+All requests are authenticated with a Bearer token (generated from your [profile dashboard](https://app.on-model.com/profile?tab=tokens)) in the `Authorization` header.
+
 ```
-1. POST /auth/login         -> Authenticate (Basic Auth -> JWT token)
-2. POST /upload             -> Get pre-signed S3 URL + file_id (per image)
-3. PUT  <upload_url>        -> Upload image binary to S3
-4. POST /project            -> Create project (get project_id)
-5. GET  /identity/<code>    -> Verify identity exists
+1. POST /upload             -> Get pre-signed S3 URL + file_id (per image)
+2. PUT  <upload_url>        -> Upload image binary to S3
+3. POST /project            -> Create project (get project_id)
+4. GET  /identity/<code>    -> Verify identity exists
    or POST /identity/upload -> Upload new identity image
-6. POST /flat-2-model       -> Submit job with project_id + file_ids + instructions
-7. GET  /jobs/<id>/status   -> Poll until status = "completed"
-8. GET  /jobs/<id>/results  -> Fetch output images (CloudFront URLs)
+5. POST /flat-2-model       -> Submit job with project_id + file_ids + instructions
+6. GET  /jobs/<id>/status   -> Poll until status = "completed"
+7. GET  /jobs/<id>/results  -> Fetch output images (CloudFront URLs)
 ```
 
 **Key difference from model-swap:** Step 6 sends ALL uploaded image UUIDs together (not one at a time) along with an `instructions` array that controls how many outputs are generated and with what parameters.
@@ -142,8 +144,7 @@ Use individual flags to build a single instruction:
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/ARTICLE123 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --pose "standing front-facing" \
   --background "white studio" \
@@ -159,8 +160,7 @@ For multiple instructions or complex configurations, use `--instructions-file`:
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/ARTICLE123 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --instructions-file instructions.json
 ```
@@ -199,8 +199,7 @@ See `example_instructions.json` for the full format. The JSON file should contai
 
 ```
 --input-folder        Path to folder containing SKU/article images (required)
---username            API username (required)
---password            API password (required)
+--token               API token (required) — generate at https://app.on-model.com/profile?tab=tokens
 --identity-code       Existing identity code to use (optional)
 --identity-image      Path to identity image file to upload (optional)
 --output-folder       Output folder for results (default: output)
@@ -234,8 +233,7 @@ Generate an on-model image with default settings:
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/P1KT1D-Y22 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --output-folder output/P1KT1D-Y22
 ```
@@ -246,8 +244,7 @@ Specify pose, background, and output format:
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/P1KT1D-Y22 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --pose "standing front-facing" \
   --background "white studio" \
@@ -262,8 +259,7 @@ Generate 3 variations of the same instruction:
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/P1KT1D-Y22 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --pose "standing" \
   --num-variations 3 \
@@ -276,8 +272,7 @@ Generate multiple outputs with different poses:
 ```bash
 $ python flat_to_model.py \
   --input-folder SKU/P1KT1D-Y22 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --instructions-file example_instructions.json \
   --output-folder output/P1KT1D-Y22
@@ -292,8 +287,7 @@ For processing multiple SKU folders at once, use `batch_flat2model.py`. It runs 
 ```bash
 $ python batch_flat2model.py \
   --input-dir SKU/ \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --output-dir results/
 ```
@@ -305,8 +299,7 @@ This scans `SKU/` for subfolders and processes each one as a separate job. Resul
 ```bash
 $ python batch_flat2model.py \
   --input-folders SKU/ARTICLE1 SKU/ARTICLE2 SKU/ARTICLE3 \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-image identities/female/LisaSummer.jpg \
   --output-dir results/ \
   --parallel 5
@@ -317,8 +310,7 @@ $ python batch_flat2model.py \
 ```bash
 $ python batch_flat2model.py \
   --input-dir SKU/ \
-  --username your_email@example.com \
-  --password your_password \
+  --token YOUR_API_TOKEN \
   --identity-code PiktidSummer \
   --instructions-file instructions.json \
   --output-dir results/
@@ -331,8 +323,7 @@ The same instructions file is applied to every SKU folder in the batch.
 ```
 --input-dir           Directory containing SKU subfolders (mutually exclusive with --input-folders)
 --input-folders       Specific SKU folder paths to process (mutually exclusive with --input-dir)
---username            API username (required)
---password            API password (required)
+--token               API token (required) — generate at https://app.on-model.com/profile?tab=tokens
 --identity-code       Existing identity code to use (optional)
 --identity-image      Path to identity image file to upload (optional)
 --output-dir          Base output directory (default: output)
@@ -348,10 +339,10 @@ A JSON summary file is saved to the output directory after each batch run with t
 
 ## Rate Limiting and Resilience
 
-The script includes built-in handling for API rate limits and token expiry:
+The script includes built-in handling for API rate limits:
 
 - **Rate limiting (429):** All API calls automatically retry with exponential backoff (1s, 2s, 4s, 8s, 16s) plus random jitter, up to 5 retries per request
-- **Token expiry (401):** If a token expires during a long-running workflow, the script re-authenticates automatically and retries the failed request
+- **Token expiry (401):** If your token has expired, the script will print an error. Generate a new token at [app.on-model.com/profile?tab=tokens](https://app.on-model.com/profile?tab=tokens).
 
 The `/flat-2-model` endpoint is rate-limited to **5 requests per minute**. The retry mechanism handles this transparently.
 
@@ -359,9 +350,9 @@ The `/flat-2-model` endpoint is rate-limited to **5 requests per minute**. The r
 
 ### Authentication Failed
 ```
-Authentication failed: 401
+Token expired or invalid
 ```
-**Solution:** Check your username and password. Verify the API server is running and accessible.
+**Solution:** Generate a new API token at [app.on-model.com/profile?tab=tokens](https://app.on-model.com/profile?tab=tokens). Tokens can be set to expire up to 4 years from issuance.
 
 ### No Images Found
 ```
