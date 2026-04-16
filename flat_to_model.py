@@ -27,7 +27,8 @@ import requests
 
 class FlatToModel:
     def __init__(self, base_url, token, input_folder, identity_code=None, identity_image=None, output_folder="output",
-                 prompt=None, pose=None, background=None, num_variations=1, size=None, aspect_ratio=None, fmt=None, seed=None, instructions_file=None):
+                 prompt=None, pose=None, background=None, num_variations=1, size=None, aspect_ratio=None, fmt=None, seed=None, instructions_file=None,
+                 image_notes=None):
         self.base_url = base_url.rstrip("/")
         self.input_folder = Path(input_folder)
         self.identity_code = identity_code
@@ -46,6 +47,9 @@ class FlatToModel:
 
         # Advanced mode
         self.instructions_file = Path(instructions_file) if instructions_file else None
+
+        # Per-image annotations
+        self.image_notes = image_notes or []
 
         self.access_token = token
         self.project_id = None
@@ -395,12 +399,32 @@ class FlatToModel:
         return [instruction]
 
     def create_job(self, identity_code, file_ids, instructions):
-        """Create a flat-to-model job."""
+        """Create a flat-to-model job.
+
+        The `images` field accepts two formats:
+        - Simple (list of UUIDs): ["uuid-1", "uuid-2"]
+        - Annotated (list of objects): [{"file_id": "uuid-1", "note": "tucked into pants"}, {"file_id": "uuid-2"}]
+
+        Annotations are optional per-image notes that control how garments should be
+        worn (e.g., tucking, layering, sleeve rolling, zipper position). When provided,
+        these notes guide the AI's wardrobe description for more accurate results.
+        """
         print("Creating flat-to-model job...")
+
+        # Build images payload - use annotated format if notes are provided
+        if self.image_notes:
+            images_payload = []
+            for i, fid in enumerate(file_ids):
+                entry = {"file_id": fid}
+                if i < len(self.image_notes) and self.image_notes[i]:
+                    entry["note"] = self.image_notes[i]
+                images_payload.append(entry)
+        else:
+            images_payload = file_ids
 
         payload = {
             "project_id": self.project_id,
-            "images": file_ids,
+            "images": images_payload,
             "identity_code": identity_code,
             "instructions": instructions
         }
@@ -692,6 +716,17 @@ def main():
         help="Path to JSON file with instructions array (overrides all simple flags)"
     )
 
+    # Per-image annotations
+    annotation_group = parser.add_argument_group("image annotations")
+    annotation_group.add_argument(
+        "--image-notes",
+        type=str,
+        nargs="+",
+        default=None,
+        help="Per-image styling notes in upload order (e.g., --image-notes 'tucked in' '' 'white sneakers'). "
+             "Use empty string '' to skip an image. Notes control garment styling like tucking, layering, and fit."
+    )
+
     args = parser.parse_args()
 
     if not args.identity_code and not args.identity_image:
@@ -713,6 +748,7 @@ def main():
         fmt=args.fmt,
         seed=args.seed,
         instructions_file=args.instructions_file,
+        image_notes=args.image_notes,
     )
 
     success = processor.run()
