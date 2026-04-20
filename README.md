@@ -223,7 +223,44 @@ See `example_instructions.json` for the full format. The JSON file should contai
 --instructions-file   Path to JSON file with instructions (overrides simple flags)
 ```
 
+**Generation options (job-level, apply to the whole job — not per instruction):**
+```
+--model               Generation engine: auto | nano_banana_pro | seedream (default: auto)
+--no-consistency      Disable the consistency enhancement (enabled by default)
+```
+
 **Note:** Either `--identity-code` or `--identity-image` must be provided.
+
+## Advanced: choosing a generation model
+
+By default, On-Model picks the best generation engine for you (`--model auto`). The default engine runs with a safety fallback if the primary engine refuses the content. You can also force a specific engine:
+
+```bash
+$ python flat_to_model.py \
+  --input-folder SKU/P1KT1D-Y22 \
+  --token YOUR_API_TOKEN \
+  --identity-code PiktidSummer \
+  --model seedream
+```
+
+Accepted values: `auto` (default), `nano_banana_pro`, `seedream`. Forcing a specific engine disables the safety fallback — if that engine refuses the content, the job fails instead of switching engines.
+
+Each entry in the job results response carries a `model_used` field indicating which engine actually produced that image. The script prints it next to each downloaded file (e.g. `Downloaded: output_0_0_v0.jpg (model: nano_banana_pro)`) and the raw value is preserved in `metadata.json`.
+
+## Advanced: cross-output consistency
+
+When a single job produces multiple outputs, On-Model enhances visual consistency across them so the set feels cohesive — steadier styling details, more unified overall look. This is enabled by default. If you prefer each output to be generated fully independently (for example, to explore a wider range of looks), add `--no-consistency`:
+
+```bash
+$ python flat_to_model.py \
+  --input-folder SKU/P1KT1D-Y22 \
+  --token YOUR_API_TOKEN \
+  --identity-code PiktidSummer \
+  --instructions-file example_instructions.json \
+  --no-consistency
+```
+
+This setting is a job-level option, not per-instruction. There is no field for it inside `example_instructions.json` — it's controlled entirely by the CLI flag (or, if you build the request body yourself, by `options.use_anchor` on the top-level payload).
 
 ## Usage Examples
 

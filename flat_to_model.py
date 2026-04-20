@@ -28,7 +28,7 @@ import requests
 class FlatToModel:
     def __init__(self, base_url, token, input_folder, identity_code=None, identity_image=None, output_folder="output",
                  prompt=None, pose=None, background=None, num_variations=1, size=None, aspect_ratio=None, fmt=None, seed=None, instructions_file=None,
-                 image_notes=None):
+                 image_notes=None, model="auto", enhance_consistency=True):
         self.base_url = base_url.rstrip("/")
         self.input_folder = Path(input_folder)
         self.identity_code = identity_code
@@ -50,6 +50,10 @@ class FlatToModel:
 
         # Per-image annotations
         self.image_notes = image_notes or []
+
+        # Job-level generation options
+        self.model = model
+        self.enhance_consistency = enhance_consistency
 
         self.access_token = token
         self.project_id = None
@@ -422,11 +426,19 @@ class FlatToModel:
         else:
             images_payload = file_ids
 
+        # Job-level options. We only set use_anchor explicitly when the user
+        # opts out (the backend defaults it to True), which keeps default
+        # payloads minimal.
+        job_options = {"model": self.model}
+        if not self.enhance_consistency:
+            job_options["use_anchor"] = False
+
         payload = {
             "project_id": self.project_id,
             "images": images_payload,
             "identity_code": identity_code,
-            "instructions": instructions
+            "instructions": instructions,
+            "options": job_options,
         }
 
         try:
@@ -549,7 +561,11 @@ class FlatToModel:
                                 with open(output_path, "wb") as f:
                                     f.write(img_response.content)
 
-                                print(f"Downloaded: {filename}")
+                                model_used = result.get("model_used")
+                                if model_used:
+                                    print(f"Downloaded: {filename} (model: {model_used})")
+                                else:
+                                    print(f"Downloaded: {filename}")
                             except Exception as e:
                                 print(f"Failed to download image {result['image_index']}: {e}")
 
@@ -727,6 +743,24 @@ def main():
              "Use empty string '' to skip an image. Notes control garment styling like tucking, layering, and fit."
     )
 
+    # Job-level generation options
+    generation_group = parser.add_argument_group("generation options")
+    generation_group.add_argument(
+        "--model",
+        choices=["auto", "nano_banana_pro", "seedream"],
+        default="auto",
+        help="Generation engine. 'auto' (default) uses the default engine with safety fallback. "
+             "Specifying an engine disables the fallback."
+    )
+    generation_group.add_argument(
+        "--no-consistency",
+        dest="enhance_consistency",
+        action="store_false",
+        default=True,
+        help="Disable the consistency enhancement. By default, multi-output jobs are generated "
+             "with steadier styling so the set feels cohesive. Use this flag to generate each output independently."
+    )
+
     args = parser.parse_args()
 
     if not args.identity_code and not args.identity_image:
@@ -749,6 +783,8 @@ def main():
         seed=args.seed,
         instructions_file=args.instructions_file,
         image_notes=args.image_notes,
+        model=args.model,
+        enhance_consistency=args.enhance_consistency,
     )
 
     success = processor.run()

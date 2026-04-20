@@ -39,7 +39,8 @@ from flat_to_model import FlatToModel
 def process_single_sku(base_url, token, input_folder, identity_code,
                        identity_image, output_folder,
                        prompt, pose, background, num_variations, size,
-                       aspect_ratio, fmt, seed, instructions_file):
+                       aspect_ratio, fmt, seed, instructions_file,
+                       model, enhance_consistency):
     """Process a single SKU folder. Runs in its own thread with its own FlatToModel instance."""
     start = time.time()
 
@@ -59,6 +60,8 @@ def process_single_sku(base_url, token, input_folder, identity_code,
         fmt=fmt,
         seed=seed,
         instructions_file=instructions_file,
+        model=model,
+        enhance_consistency=enhance_consistency,
     )
 
     success = processor.run()
@@ -153,6 +156,23 @@ def main():
         help="Path to JSON file with instructions array (overrides all simple flags)"
     )
 
+    # Job-level generation options
+    generation_group = parser.add_argument_group("generation options")
+    generation_group.add_argument(
+        "--model",
+        choices=["auto", "nano_banana_pro", "seedream"],
+        default="auto",
+        help="Generation engine. 'auto' (default) uses the default engine with safety fallback.",
+    )
+    generation_group.add_argument(
+        "--no-consistency",
+        dest="enhance_consistency",
+        action="store_false",
+        default=True,
+        help="Disable the consistency enhancement. By default, multi-output jobs are generated "
+             "with steadier styling so the set feels cohesive.",
+    )
+
     args = parser.parse_args()
 
     if not args.identity_code and not args.identity_image:
@@ -188,6 +208,8 @@ def main():
     print(f"  Folders to process: {len(folders)}")
     print(f"  Parallel workers:   {parallel}")
     print(f"  Output directory:   {output_dir}")
+    print(f"  Model:              {args.model}")
+    print(f"  Consistency:        {'on' if args.enhance_consistency else 'off'}")
     print(f"  API base URL:       {args.base_url}")
     if args.instructions_file:
         print(f"  Instructions file:  {args.instructions_file}")
@@ -222,6 +244,8 @@ def main():
                 args.fmt,
                 args.seed,
                 args.instructions_file,
+                args.model,
+                args.enhance_consistency,
             )
             future_to_folder[future] = folder.name
 
@@ -270,6 +294,8 @@ def main():
                 "timestamp": datetime.now().isoformat(),
                 "configuration": {
                     "parallel": parallel,
+                    "model": args.model,
+                    "enhance_consistency": args.enhance_consistency,
                     "base_url": args.base_url,
                     "identity_code": args.identity_code,
                     "identity_image": args.identity_image,
