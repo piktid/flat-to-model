@@ -225,7 +225,7 @@ See `example_instructions.json` for the full format. The JSON file should contai
 
 **Generation options (job-level, apply to the whole job — not per instruction):**
 ```
---model               Generation engine: auto | nano_banana_pro | seedream (default: auto)
+--model               Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | gpt_image (default: auto)
 --no-consistency      Disable the consistency enhancement (enabled by default)
 --barefoot            Render the model without footwear (no shoe image required)
 ```
@@ -244,7 +244,7 @@ $ python flat_to_model.py \
   --model seedream
 ```
 
-Accepted values: `auto` (default), `nano_banana_pro`, `seedream`. Forcing a specific engine disables the safety fallback — if that engine refuses the content, the job fails instead of switching engines.
+Accepted values: `auto` (default), `nano_banana_2`, `nano_banana_pro`, `seedream`, `gpt_image`. Forcing a specific engine disables the safety fallback — if that engine refuses the content, the job fails instead of switching engines.
 
 Each entry in the job results response carries a `model_used` field indicating which engine actually produced that image. The script prints it next to each downloaded file (e.g. `Downloaded: output_0_0_v0.jpg (model: nano_banana_pro)`) and the raw value is preserved in `metadata.json`.
 
