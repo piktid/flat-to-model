@@ -63,7 +63,7 @@ Place your flat-lay/article images (JPG, JPEG, or PNG format) in a folder. Unlik
 
 > **Step 3** - Choose your identity
 
-You can either use an existing identity code from your gallery or upload a new identity image:
+You can either use an existing identity code from your gallery or upload a new identity image. Don't have one to use? See the [Create Identity](https://github.com/piktid/create-identity) repo to generate a brand-owned AI model from a brief or a reference image.
 
 **Option A: Using an existing identity code**
 ```bash
@@ -227,6 +227,7 @@ See `example_instructions.json` for the full format. The JSON file should contai
 ```
 --model               Generation engine: auto | nano_banana_pro | seedream (default: auto)
 --no-consistency      Disable the consistency enhancement (enabled by default)
+--barefoot            Render the model without footwear (no shoe image required)
 ```
 
 **Note:** Either `--identity-code` or `--identity-image` must be provided.
@@ -261,6 +262,20 @@ $ python flat_to_model.py \
 ```
 
 This setting is a job-level option, not per-instruction. There is no field for it inside `example_instructions.json` — it's controlled entirely by the CLI flag (or, if you build the request body yourself, by `options.use_anchor` on the top-level payload).
+
+## Advanced: barefoot mode
+
+By default, flat-to-model expects a complete outfit (top, bottom, and footwear) and renders the model wearing shoes. If your SKUs don't include footwear, or you want the model rendered barefoot, add `--barefoot`. Footwear images are ignored and the model is rendered without shoes, so you only need to provide top and bottom garments:
+
+```bash
+$ python flat_to_model.py \
+  --input-folder SKU/P1KT1D-Y22 \
+  --token YOUR_API_TOKEN \
+  --identity-code PiktidSummer \
+  --barefoot
+```
+
+Like consistency, this is a job-level option, not per-instruction. If you build the request body yourself, set `options.barefoot` to `true` on the top-level payload.
 
 ## Usage Examples
 
@@ -455,6 +470,7 @@ Check the console output for detailed error messages.
 - [On-Model Website](https://on-model.com) — Learn about the platform
 - [On-Model App](https://app.on-model.com) — Try the app (15 free images/month)
 - [Model Swap Repo](https://github.com/piktid/model-swap) — Sister repo for model swap
+- [Create Identity Repo](https://github.com/piktid/create-identity) — Generate proprietary AI models from a brief or a reference image
 - [API Documentation](https://docs.piktid.com/docs/v2) — Full API reference
 - [PiktID](https://piktid.com) — Company website
 - [Discord](https://discord.com/invite/FJU39e9Z4P) — Community and support

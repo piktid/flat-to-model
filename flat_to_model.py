@@ -28,7 +28,7 @@ import requests
 class FlatToModel:
     def __init__(self, base_url, token, input_folder, identity_code=None, identity_image=None, output_folder="output",
                  prompt=None, pose=None, background=None, num_variations=1, size=None, aspect_ratio=None, fmt=None, seed=None, instructions_file=None,
-                 image_notes=None, model="auto", enhance_consistency=True):
+                 image_notes=None, model="auto", enhance_consistency=True, barefoot=False):
         self.base_url = base_url.rstrip("/")
         self.input_folder = Path(input_folder)
         self.identity_code = identity_code
@@ -54,6 +54,7 @@ class FlatToModel:
         # Job-level generation options
         self.model = model
         self.enhance_consistency = enhance_consistency
+        self.barefoot = barefoot
 
         self.access_token = token
         self.project_id = None
@@ -432,6 +433,10 @@ class FlatToModel:
         job_options = {"model": self.model}
         if not self.enhance_consistency:
             job_options["use_anchor"] = False
+        # Barefoot: render the model without footwear. Only set when enabled so
+        # default payloads stay minimal (the backend defaults it to False).
+        if self.barefoot:
+            job_options["barefoot"] = True
 
         payload = {
             "project_id": self.project_id,
@@ -760,6 +765,13 @@ def main():
         help="Disable the consistency enhancement. By default, multi-output jobs are generated "
              "with steadier styling so the set feels cohesive. Use this flag to generate each output independently."
     )
+    generation_group.add_argument(
+        "--barefoot",
+        action="store_true",
+        default=False,
+        help="Render the model without footwear. Footwear images are ignored, so you only "
+             "need to provide top and bottom garments (no shoe image required)."
+    )
 
     args = parser.parse_args()
 
@@ -785,6 +797,7 @@ def main():
         image_notes=args.image_notes,
         model=args.model,
         enhance_consistency=args.enhance_consistency,
+        barefoot=args.barefoot,
     )
 
     success = processor.run()
