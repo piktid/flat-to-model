@@ -225,9 +225,10 @@ See `example_instructions.json` for the full format. The JSON file should contai
 
 **Generation options (job-level, apply to the whole job — not per instruction):**
 ```
---model               Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | gpt_image (default: auto)
+--model               Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | seedream_5_pro | gpt_image | gpt_image_2_5 (default: auto)
 --no-consistency      Disable the consistency enhancement (enabled by default)
 --barefoot            Render the model without footwear (no shoe image required)
+--force-flat-background  Force the background to the solid hex color in --background (e.g. "#EDEDED")
 ```
 
 **Note:** Either `--identity-code` or `--identity-image` must be provided.
@@ -244,7 +245,7 @@ $ python flat_to_model.py \
   --model seedream
 ```
 
-Accepted values: `auto` (default), `nano_banana_2`, `nano_banana_pro`, `seedream`, `gpt_image`. Forcing a specific engine disables the safety fallback — if that engine refuses the content, the job fails instead of switching engines.
+Accepted values: `auto` (default), `nano_banana_2`, `nano_banana_pro`, `seedream`, `seedream_5_pro`, `gpt_image`, `gpt_image_2_5`. Forcing a specific engine disables the safety fallback — if that engine refuses the content, the job fails instead of switching engines.
 
 Each entry in the job results response carries a `model_used` field indicating which engine actually produced that image. The script prints it next to each downloaded file (e.g. `Downloaded: output_0_0_v0.jpg (model: nano_banana_pro)`) and the raw value is preserved in `metadata.json`.
 
@@ -276,6 +277,21 @@ $ python flat_to_model.py \
 ```
 
 Like consistency, this is a job-level option, not per-instruction. If you build the request body yourself, set `options.barefoot` to `true` on the top-level payload.
+
+## Advanced: force a flat background
+
+Marketplaces and product feeds often require a perfectly uniform background, but AI engines don't always render a solid color cleanly — they can drift, add subtle gradients, or read a plain studio as a textured scene. When you need the background to be an exact flat color, set your instruction's `--background` to a hex code and add `--force-flat-background`:
+
+```bash
+$ python flat_to_model.py \
+  --input-folder SKU/P1KT1D-Y22 \
+  --token YOUR_API_TOKEN \
+  --identity-code PiktidSummer \
+  --background "#EDEDED" \
+  --force-flat-background
+```
+
+The output background is then set to exactly the hex color you specified (here `#EDEDED`). This is a job-level option, not per-instruction. If you build the request body yourself, set `options.force_flat_background` to `true` on the top-level payload. It only takes effect when the background instruction is a solid color, so descriptive scenes (e.g. `"gym rooftop at golden hour"`) are unaffected.
 
 ## Usage Examples
 

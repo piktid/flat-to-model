@@ -28,7 +28,8 @@ import requests
 class FlatToModel:
     def __init__(self, base_url, token, input_folder, identity_code=None, identity_image=None, output_folder="output",
                  prompt=None, pose=None, background=None, num_variations=1, size=None, aspect_ratio=None, fmt=None, seed=None, instructions_file=None,
-                 image_notes=None, model="auto", enhance_consistency=True, barefoot=False):
+                 image_notes=None, model="auto", enhance_consistency=True, barefoot=False,
+                 force_flat_background=False):
         self.base_url = base_url.rstrip("/")
         self.input_folder = Path(input_folder)
         self.identity_code = identity_code
@@ -55,6 +56,7 @@ class FlatToModel:
         self.model = model
         self.enhance_consistency = enhance_consistency
         self.barefoot = barefoot
+        self.force_flat_background = force_flat_background
 
         self.access_token = token
         self.project_id = None
@@ -437,6 +439,10 @@ class FlatToModel:
         # default payloads stay minimal (the backend defaults it to False).
         if self.barefoot:
             job_options["barefoot"] = True
+        # Force a flat background fill toward the solid hex color in the
+        # background instruction (e.g. "#EDEDED"). Requires post-processing.
+        if self.force_flat_background:
+            job_options["force_flat_background"] = True
 
         payload = {
             "project_id": self.project_id,
@@ -752,9 +758,10 @@ def main():
     generation_group = parser.add_argument_group("generation options")
     generation_group.add_argument(
         "--model",
-        choices=["auto", "nano_banana_2", "nano_banana_pro", "seedream", "gpt_image"],
+        choices=["auto", "nano_banana_2", "nano_banana_pro", "seedream", "seedream_5_pro",
+                 "gpt_image", "gpt_image_2_5"],
         default="auto",
-        help="Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | gpt_image. "
+        help="Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | seedream_5_pro | gpt_image | gpt_image_2_5. "
              "'auto' (default) uses the default engine with a safety fallback. "
              "Specifying an engine disables the fallback."
     )
@@ -772,6 +779,14 @@ def main():
         default=False,
         help="Render the model without footwear. Footwear images are ignored, so you only "
              "need to provide top and bottom garments (no shoe image required)."
+    )
+    generation_group.add_argument(
+        "--force-flat-background",
+        action="store_true",
+        default=False,
+        help="Force the background to the solid hex color given in --background (e.g. '#EDEDED'). "
+             "Useful for marketplace feeds that require a perfectly uniform background. "
+             "Has no effect unless the background instruction is a solid color."
     )
 
     args = parser.parse_args()
@@ -799,6 +814,7 @@ def main():
         model=args.model,
         enhance_consistency=args.enhance_consistency,
         barefoot=args.barefoot,
+        force_flat_background=args.force_flat_background,
     )
 
     success = processor.run()

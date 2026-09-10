@@ -40,7 +40,7 @@ def process_single_sku(base_url, token, input_folder, identity_code,
                        identity_image, output_folder,
                        prompt, pose, background, num_variations, size,
                        aspect_ratio, fmt, seed, instructions_file,
-                       model, enhance_consistency, barefoot):
+                       model, enhance_consistency, barefoot, force_flat_background):
     """Process a single SKU folder. Runs in its own thread with its own FlatToModel instance."""
     start = time.time()
 
@@ -63,6 +63,7 @@ def process_single_sku(base_url, token, input_folder, identity_code,
         model=model,
         enhance_consistency=enhance_consistency,
         barefoot=barefoot,
+        force_flat_background=force_flat_background,
     )
 
     success = processor.run()
@@ -161,9 +162,10 @@ def main():
     generation_group = parser.add_argument_group("generation options")
     generation_group.add_argument(
         "--model",
-        choices=["auto", "nano_banana_2", "nano_banana_pro", "seedream", "gpt_image"],
+        choices=["auto", "nano_banana_2", "nano_banana_pro", "seedream", "seedream_5_pro",
+                 "gpt_image", "gpt_image_2_5"],
         default="auto",
-        help="Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | gpt_image. "
+        help="Generation engine: auto | nano_banana_2 | nano_banana_pro | seedream | seedream_5_pro | gpt_image | gpt_image_2_5. "
              "'auto' (default) uses the default engine with a safety fallback.",
     )
     generation_group.add_argument(
@@ -180,6 +182,13 @@ def main():
         default=False,
         help="Render the model without footwear. Footwear images are ignored, so each SKU "
              "folder only needs top and bottom garments (no shoe image required).",
+    )
+    generation_group.add_argument(
+        "--force-flat-background",
+        action="store_true",
+        default=False,
+        help="Force the background to the solid hex color given in --background (e.g. '#EDEDED'). "
+             "Useful for marketplace feeds that require a perfectly uniform background.",
     )
 
     args = parser.parse_args()
@@ -257,6 +266,7 @@ def main():
                 args.model,
                 args.enhance_consistency,
                 args.barefoot,
+                args.force_flat_background,
             )
             future_to_folder[future] = folder.name
 
@@ -308,6 +318,7 @@ def main():
                     "model": args.model,
                     "enhance_consistency": args.enhance_consistency,
                     "barefoot": args.barefoot,
+                    "force_flat_background": args.force_flat_background,
                     "base_url": args.base_url,
                     "identity_code": args.identity_code,
                     "identity_image": args.identity_image,
